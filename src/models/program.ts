@@ -3,6 +3,7 @@ import IProgram from "../interfaces/program";
 
 const programSchema: Schema = new Schema({
     diplomaType: String,
+    domain: String,
     name: String,
     school: String,
     deadline: Date,

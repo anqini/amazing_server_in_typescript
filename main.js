@@ -1,18 +1,85 @@
+#!/usr/bin/env node
 "use strict";
-exports.__esModule = true;
-var express_1 = require("express");
-var app = express_1["default"]();
-var body_parser_1 = require("body-parser");
-var cors_1 = require("cors");
-require('./startup/db')();
-// Middleware
-app.use(body_parser_1["default"].json());
-app.use(cors_1["default"]());
-// const category = require('./routes/category');
-// const search = require('./routes/search');
-// const detail = require('./routes/detail');
-// app.use('/api/category', category);
-// app.use('/api/search', search);
-// app.use('/api/detail', detail);
-var port = Number(process.env.PORT) || 5001;
-app.listen(port, function () { return console.log("Server started on port " + port); });
+
+//module dependencies
+var server = require("./server/server");
+var debug = require("debug")("express:server");
+var http = require("http");
+//create http server
+var httpPort = normalizePort(process.env.PORT || 5002);
+var app = server.Server.bootstrap().app;
+app.set("port", httpPort);
+var httpServer = http.createServer(app);
+
+//listen on provided ports
+try {
+    httpServer.listen(httpPort);
+    console.log(`listening on port ${httpPort}...`);
+} catch(err) {
+    console.error(err);
+    exit(1);
+}
+
+//add error handler
+httpServer.on("error", onError);
+
+//start listening on port
+httpServer.on("listening", onListening);
+
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+function onError(error) {
+  if (error.syscall !== "listen") {
+    throw error;
+  }
+  var port = normalizePort(process.env.PORT || 5002);
+  var bind = typeof port === "string"
+    ? "Pipe " + port
+    : "Port " + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case "EACCES":
+      console.error(bind + " requires elevated privileges");
+      process.exit(1);
+      break;
+    case "EADDRINUSE":
+      console.error(bind + " is already in use");
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+function onListening() {
+  var addr = httpServer.address();
+  var bind = typeof addr === "string"
+    ? "pipe " + addr
+    : "port " + addr.port;
+  debug("Listening on " + bind);
+}

@@ -2,6 +2,7 @@ import { Document } from "mongoose";
 
 export default interface IProgram extends Document {
     diplomaType: string,
+    domain: string,
     name: string,
     school: string,
     deadline: Date,
